@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "an order management system for linkinn cafe",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "dev"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server",
+    "start": "node server"
   },
   "keywords": [
     "express"
