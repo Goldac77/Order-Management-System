@@ -3,7 +3,7 @@ import express from 'express';
 const app = express();
 app.use(express.json());
 
-import { connectToDatabase, addOrder, getOrder } from "./database.js";
+import { connectToDatabase, addOrder, getOrder, getOrders } from "./database.js";
 
 
 app.post("/order", async (req, res) => {
@@ -12,8 +12,10 @@ app.post("/order", async (req, res) => {
     res.send(order);
 })
 
-app.get("/admin", async (req, res) => {
-
+//home page
+app.get("/", async (req, res) => {
+    const orders = await getOrders();
+    res.json(orders);
 })
 
 app.listen(5000, async () => {

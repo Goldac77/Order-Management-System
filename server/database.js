@@ -47,42 +47,48 @@ export function connectToDatabase() {
     })
 }
 
-function endConnection() {
-    connection.end((err) => {
-        if(err) {
-            console.error("Error closing database: ", err);
-        }
-        console.log("Database closed");
-    })
-};
-
 export async function addOrder(order_description, order_reference) {
     try {
-        connectToDatabase();
         let sql = `
         INSERT INTO orders (order_description, order_reference)
          VALUES (?, ?)
         `;
         connection.query(sql, [order_description, order_reference])
         console.log("Order inserted successfully");
-        endConnection();
     } catch(err) {
         console.error("Error inserting into database", err);
     }
 }
 
-
+//get specific order details
 export async function getOrder(order_id) {
     try {
-        connectToDatabase();
         let sql = `
-        SELECT * FROM orders
+        SELECT * FROM ${process.env.TABLE_NAME}
         WHERE order_id = ?
         `
-        await connection.query(sql, [order_id]);
+        const order = await connection.query(sql, [order_id]);
         console.log("Order retrieved successfully");
-        endConnection();
+        return order;
     } catch(err) {
         console.error("Error fetching from database: ", err);
     }
+}
+
+//get all order details
+export async function getOrders() {
+    return new Promise((resolve, reject) => {
+        let sql = 
+        `
+            SELECT * FROM ${process.env.TABLE_NAME}
+        `;
+        connection.query(sql, (err, result, fields) => {
+            if (err) {
+                console.error("Error fetching orders: ", err);
+                reject(err); // Reject the promise in case of an error
+            } else {
+                resolve(result); // Resolve the promise with the result
+            }
+        });
+    });
 }
