@@ -1,14 +1,23 @@
 import mysql from 'mysql';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
-
+//database configuration
 const connection = mysql.createConnection({
   host: process.env.DATABASE_HOST,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
 })
+
+const email_transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_ACCOUNT,
+        pass: process.env.EMAIL_APP_PASSWORD
+    }
+});
 
 export function connectToDatabase() {
     connection.connect((err) => {
@@ -40,14 +49,32 @@ export function connectToDatabase() {
             order_date timestamp);
         `;
         connection.query(table_sql, (err) => {
-        if (err) throw err;
+            if (err) throw err;
             console.log(`${process.env.TABLE_NAME} table connected`);
         });
 
     })
 }
 
-export async function addOrder(order_description, order_reference) {
+//function to send email
+function sendEmail(emailSubject, emailContent, ...recipientsList) {
+    //email configuration
+    let recipients = recipientsList.join(",");
+    
+    const mail_config = {
+        from: process.env.EMAIL_ACCOUNT,
+        to: recipients,
+        subject: emailSubject,
+        text: emailContent
+    }
+
+    email_transporter.sendMail(mail_config, (err, info) => {
+        if(err) throw err;
+        console.log("Email sent successfully")
+    })
+}
+
+export async function addOrder(order_description, order_reference, emailSubject, emailContent, ...recipientsList) {
     try {
         let sql = `
         INSERT INTO orders (order_description, order_reference)
@@ -55,6 +82,7 @@ export async function addOrder(order_description, order_reference) {
         `;
         connection.query(sql, [order_description, order_reference])
         console.log("Order inserted successfully");
+        sendEmail(emailSubject, emailContent, recipientsList)
     } catch(err) {
         console.error("Error inserting into database", err);
     }
@@ -62,17 +90,22 @@ export async function addOrder(order_description, order_reference) {
 
 //get specific order details
 export async function getOrder(order_id) {
-    try {
-        let sql = `
-        SELECT * FROM ${process.env.TABLE_NAME}
-        WHERE order_id = ?
-        `
-        const order = await connection.query(sql, [order_id]);
-        console.log("Order retrieved successfully");
-        return order;
-    } catch(err) {
-        console.error("Error fetching from database: ", err);
-    }
+    return new Promise((resolve, reject) => {
+        try {
+            let sql = `
+            SELECT * FROM ${process.env.TABLE_NAME}
+            WHERE order_id = ?
+            `
+            connection.query(sql, [order_id], (err, result, fields) => {
+                if(err) reject(err);
+                resolve(result)
+            });
+            console.log("Order retrieved successfully");
+        } catch(err) {
+            console.error("Error fetching from database: ", err);
+        }
+    })
+    
 }
 
 //get all order details
@@ -88,6 +121,7 @@ export async function getOrders() {
                 reject(err); // Reject the promise in case of an error
             } else {
                 resolve(result); // Resolve the promise with the result
+                console.log("Orders retrieved successfully")
             }
         });
     });
