@@ -2,6 +2,7 @@ import express from 'express';
 
 const app = express();
 app.use(express.json());
+app.use(express.static("client"));
 
 import { connectToDatabase, addOrder, getOrder, getOrders } from "./database.js";
 
