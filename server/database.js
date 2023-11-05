@@ -5,10 +5,11 @@ import nodemailer from 'nodemailer';
 dotenv.config();
 
 //database configuration
-const connection = mysql.createConnection({
+const connection = mysql.createPool({
   host: process.env.DATABASE_HOST,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME
 })
 
 const email_transporter = nodemailer.createTransport({
@@ -19,41 +20,37 @@ const email_transporter = nodemailer.createTransport({
     }
 });
 
-export function connectToDatabase() {
-    connection.connect((err) => {
+export function initializeDatabase() {
+    //create database
+    let db_sql = `
+    CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME}
+    `
+    connection.query(db_sql, (err) => {
         if(err) throw err;
-        
-        //create database
-        let db_sql = `
-        CREATE DATABASE IF NOT EXISTS ${process.env.DATABASE_NAME}
-        `
-        connection.query(db_sql, (err) => {
-            if(err) throw err;
-            console.log(`${process.env.DATABASE_NAME} database connected`)
-        })
-
-        //use database
-        let use_sql = `
-        USE ${process.env.DATABASE_NAME}
-        `
-        connection.query(use_sql, (err) => {
-            if(err) throw err;
-        })
-        
-        //create table
-        let table_sql = `
-        CREATE TABLE IF NOT EXISTS ${process.env.TABLE_NAME} (
-            order_id int primary key auto_increment,
-            order_description varchar(300),
-            order_reference varchar(20),
-            order_date timestamp);
-        `;
-        connection.query(table_sql, (err) => {
-            if (err) throw err;
-            console.log(`${process.env.TABLE_NAME} table connected`);
-        });
-
+        console.log(`${process.env.DATABASE_NAME} database connected`)
     })
+
+    //use database
+    let use_sql = `
+    USE ${process.env.DATABASE_NAME}
+    `
+    connection.query(use_sql, (err) => {
+        if(err) throw err;
+        console.log(`${process.env.DATABASE_NAME} database selected`);
+    })
+    
+    //create table
+    let table_sql = `
+    CREATE TABLE IF NOT EXISTS ${process.env.TABLE_NAME} (
+        order_id int primary key auto_increment,
+        order_description varchar(300),
+        order_reference varchar(20),
+        order_date timestamp default current_timestamp);
+    `;
+    connection.query(table_sql, (err) => {
+        if (err) throw err;
+        console.log(`${process.env.TABLE_NAME} table connected`);
+    });
 }
 
 //function to send email

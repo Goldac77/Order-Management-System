@@ -2,9 +2,9 @@ import express from 'express';
 
 const app = express();
 app.use(express.json());
-app.use(express.static("client"));
+app.use(express.static("../client"));
 
-import { connectToDatabase, addOrder, getOrder, getOrders } from "./database.js";
+import { initializeDatabase, addOrder, getOrder, getOrders } from "./database.js";
 
 
 app.post("/order", async (req, res) => {
@@ -27,12 +27,12 @@ app.get("/order/:id", async(req, res) => {
 })
 
 //home page
-app.get("/", async (req, res) => {
+app.get("/admin", async (req, res) => {
     const orders = await getOrders();
     res.json(orders);
 })
 
 app.listen(5000, async () => {
-    await connectToDatabase();
+    await initializeDatabase();
     console.log("Express server started on port 5000");
 });
