@@ -1,7 +1,14 @@
 import express from 'express';
 
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 app.use(express.static("../client"));
 
 import { initializeDatabase, addOrder, getOrder, getOrders } from "./database.js";
@@ -11,12 +18,14 @@ app.post("/order", async (req, res) => {
     const {
         order_description, 
         order_reference,
-        emailSubject,
-        emailContent,
-        recipientsList
+        recipient
     } = req.body;
-    const order = await addOrder(order_description, order_reference, emailSubject, emailContent, recipientsList);
-    res.send(order);
+    await addOrder(order_description, order_reference, recipient);
+    res.redirect("/success");
+})
+
+app.get("/success", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/pages/success.html"));
 })
 
 //display specific order details

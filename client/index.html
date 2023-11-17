@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles/index.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                clifford: '#da373d',
+              }
+            }
+          }
+        }
+    </script>
+    <title>Admin Home</title>
+</head>
+<body>
+    <div id="orders-list">
+
+    </div>
+    <div id="form-div">
+      <form action="http://localhost:5000/order" method="post">
+        <label for="order_description">Order Description</label><br>
+        <input type="text" name="order_description" id="order_description" placeholder="Enter Order Description" class="border rounded"><br>
+        <label for="order_reference">Order Reference</label><br>
+        <input type="text" name="order_reference" id="order_reference" placeholder="Enter Momo reference" class="border rounded"><br>
+        <label for="recipient">Email</label><br>
+        <input type="email" name="recipient" id="form_email" placeholder="Enter email address" class="border rounded"><br>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+</body>
+<script src="scripts/index.js"></script>
+</html>

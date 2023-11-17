@@ -1,0 +1,9 @@
+* {
+    box-sizing: border-box;
+    margin: auto;
+}
+
+button {
+    background-color: blue !important;
+    color: #fff;
+}

@@ -54,13 +54,11 @@ export function initializeDatabase() {
 }
 
 //function to send email
-function sendEmail(emailSubject, emailContent, ...recipientsList) {
+function sendEmail(emailSubject, emailContent, recipient) {
     //email configuration
-    let recipients = recipientsList.join(",");
-    
     const mail_config = {
         from: process.env.EMAIL_ACCOUNT,
-        to: recipients,
+        to: recipient,
         subject: emailSubject,
         text: emailContent
     }
@@ -71,15 +69,18 @@ function sendEmail(emailSubject, emailContent, ...recipientsList) {
     })
 }
 
-export async function addOrder(order_description, order_reference, emailSubject, emailContent, ...recipientsList) {
+export async function addOrder(order_description, order_reference, recipient) {
     try {
+        const emailSubject = "Order to Linkinn Cafe Received";
+        const emailContent = `Your order for ${order_description} is being processed`;
+
         let sql = `
         INSERT INTO orders (order_description, order_reference)
          VALUES (?, ?)
         `;
         connection.query(sql, [order_description, order_reference])
         console.log("Order inserted successfully");
-        sendEmail(emailSubject, emailContent, recipientsList)
+        sendEmail(emailSubject, emailContent, recipient)
     } catch(err) {
         console.error("Error inserting into database", err);
     }
